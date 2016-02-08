@@ -13,10 +13,10 @@ FILE read_file(char[]);
 void modify_record(FILE*,int);
 int get_student_no(char[]);
 void change_num(int *number);
-
+void get_student_two(void);
 int main (int argc, char*argv[]){
 	
-	
+	/* get_student_two(); */
 char student_id[STUDENT_NO_SIZE];
 FILE fp = read_file(argv[1]);
 /*TODO:  alter main has duplicate code*/
@@ -68,7 +68,7 @@ int mainMenu(){
 int command = 0;
 char line[LINESIZE];
 while(1){
-printf("Enter a command -2 (quit) -1(append) 0 (display): ");
+printf("\nEnter a command -2 (quit) -1(append) 0 (display): ");
 
 if(!fgets(line, LINESIZE, stdin)){
 	clearerr(stdin);
@@ -96,7 +96,15 @@ void display_records(FILE *fp){
 		fprintf(stderr,"%d %s %d\n",++counter,student_id,score);
 	}
 }
-
+void get_student_two(){
+char line[LINESIZE];
+printf("Enter number");
+while(1){
+if(!fgets(line, LINESIZE, stdin))
+	clearerr(stdin);
+	break;
+}
+}
 int get_student_no(char student_no[]){
 	/*@return: -1 abort | 1 good student no | 0 bad student no, try again*/
 	char line[LINESIZE];
@@ -113,7 +121,7 @@ int get_student_no(char student_no[]){
 		printf("-1 detected\n");
 		return -1;
 	}
-	
+		
 	if(sscanf(line,"%s",student_no)==1){
 		if(strlen(student_no) !=STUDENT_NO_SIZE){
 			printf("bad length\n");
@@ -139,38 +147,34 @@ void change_num(int *number){
 }
 
 int get_student_score(int *score){
-	/*0 bad score try again*/
+	/* 0 bad score try again */
+	
 	char line[LINESIZE];
 	int local_score;
 	
 	printf("Enter score: ");
 	if(!fgets(line, LINESIZE, stdin)){
 	clearerr(stdin);
-	return 0;
+	return -1;
 	}
 	if(sscanf(line,"%d",&local_score)==1){
 		*score = local_score;
-	if(local_score ==-1){
+		if(local_score ==-1){
 		return -1;
+		}
+		if(local_score <0 || local_score >100)
+			return 0;
+		}
+	return 1;
 	}
-	if(local_score <0 || local_score >100)
-		return 0;
-	else
-		return 1;
-	}
-	else
-	return 0;
-}
 
 
-void append_record(FILE *fp){
+void prompt_user(FILE *fp){
 	char line[LINESIZE];
 	char student_id[STUDENT_NO_SIZE];
 	int score =0;
 	char score_buffer[STUDENT_NO_SIZE];
 	int abort;
-	
-	fseek(fp, 0, SEEK_END);
 	
 	while(1){
 	abort = get_student_no(student_id);
@@ -199,16 +203,14 @@ void append_record(FILE *fp){
 	fflush(fp);
 	}
 }
+void append_record(FILE *fp){
+	fseek(fp, 0, SEEK_END);
+	prompt_user(fp);
+}
 
 void modify_record(FILE *fp, int choice){
-	char line[LINESIZE];
-	char student_id[STUDENT_NO_SIZE];
-	int score =0;
-	char score_buffer[STUDENT_NO_SIZE];
-	int abort;
 	
-	char student_no[STUDENT_NO_SIZE];
-	printf("modifying record #: %d\n",choice);
+	printf("attempting to modify record #: %d\n",choice);
 	
 	/*choice and record storage is off by 1*/
 	--choice;
@@ -219,32 +221,7 @@ void modify_record(FILE *fp, int choice){
 	seek = choice *20;
 	fseek(fp,seek,SEEK_SET);
 	
-	while(1){
-	abort = get_student_no(student_id);
-	printf("abort value: %d\n",abort);
-	if(abort ==-1 ||abort ==1)
-		break;
-	}
-	while(1 && abort!=-1){
-	abort = get_student_score(&score);
-	if(abort ==-1 ||abort ==1)
-		break;
-	}
-	
-	if(abort !=-1){
-	printf("appending record\n");
-	size_t i;
-	for(i=0; i < STUDENT_NO_SIZE; i++){
-	fputc(student_id[i],fp);
-	}
-	fputc(' ',fp);
-	sprintf(score_buffer, "%9d", score);
-	for(i=0; i < STUDENT_NO_SIZE;i++){
-	fputc(score_buffer[i],fp);
-	}
-	fputc('\n', fp);
-	fflush(fp);
-	}
+	prompt_user(fp);
 	}
 	
 
